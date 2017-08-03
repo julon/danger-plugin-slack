@@ -1,8 +1,33 @@
 import { IncomingWebhook } from "@slack/client"
-import { Violation } from "../node_modules/danger/distribution/danger"
+import { GitHubPRDSL, Violation } from "../node_modules/danger/distribution/danger"
 import { DangerDSLType } from "../node_modules/danger/distribution/dsl/DangerDSL"
 import { DangerResults } from "../node_modules/danger/distribution/dsl/DangerResults"
-import { SlackAttachment, SlackMessage, SlackOptions } from "./DangerPluginSlack"
+
+export interface SlackOptions {
+  webhookUrl: string
+  text?: string
+  username?: string
+  iconEmoji?: string
+  iconUrl?: string
+  channel?: string
+}
+
+export interface SlackAttachment {
+  color: string
+  fallback: string
+  title: string
+  text: string
+  mrkdwn_in?: string[]
+}
+
+export interface SlackMessage {
+  text: string
+  username?: string
+  iconEmoji?: string
+  iconUrl?: string
+  channel?: string
+  attachments: SlackAttachment[]
+}
 
 /**
  * Current instance of Danger data
@@ -17,46 +42,20 @@ declare var results: DangerResults
 /**
  * Report to Slack the result of Danger
  */
-export default async function slack(options: SlackOptions) {
-  if (!options.url) {
-    throw Error("You forgot to set the webhook url")
-  }
-
-  const webhook = new IncomingWebhook(options.url)
-  const msg: SlackMessage = buildDangerMessage(results, options)
-
-  webhook.send(msg, (err, header, statusCode, body) => {
-    if (err) {
-      throw err
-    }
-  })
+export default function slack(options: SlackOptions) {
+  const webhook = new IncomingWebhook(options.webhookUrl)
+  const msg: SlackMessage = createMessage(danger.github.pr, results, options)
+  webhook.send(msg)
 }
 
-function buildDangerMessage(resultLists: DangerResults, options: SlackOptions): SlackMessage {
+export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
   const { fails, warnings, messages, markdowns } = resultLists
-  const pr = danger.github.pr
-
-  // temporary wild cast to retrieve url
-  const prInfo: string = `<${(pr as any).html_url}|*PR#${pr.number}* - ${pr.title}>`
-  const prAuthor: string = `<${(pr.user as any).html_url}|${pr.user.login}>`
-
-  // override dynamic emoji if options.iconEmoji is set
-  const currentEmoji: string = options.iconEmoji || getDynamicEmoji(fails, warnings)
 
   const msg: SlackMessage = {
-    iconEmoji: currentEmoji,
-    text: `${prInfo} by ${prAuthor}\n ${pr.body}`,
+    text: "",
+    username: options.username || "DangerJS",
+    iconEmoji: options.iconEmoji || ":open_mouth:",
     attachments: [],
-  }
-
-  // prefix text if set
-  if (options.text) {
-    msg.text = `${options.text}\n${msg.text}`
-  }
-
-  // custom username if set
-  if (options.username) {
-    msg.username = options.username
   }
 
   // custom iconUrl if set
@@ -69,30 +68,49 @@ function buildDangerMessage(resultLists: DangerResults, options: SlackOptions): 
     msg.channel = options.channel
   }
 
-  // add messages as attachments
-  if (!fails.length && !warnings.length && !messages.length) {
-    msg.text += "\nNo output to show."
+  // send only a custom text
+  if (options.text) {
+    msg.text = `${options.text}`
   } else {
-    if (fails.length > 0) {
-      msg.attachments.push(formatSlackAttachment("Fails", "danger", fails))
-    }
+    // send only the report
 
-    if (warnings.length > 0) {
-      msg.attachments.push(formatSlackAttachment("Warnings", "warning", warnings))
-    }
+    // temporary wild cast to retrieve url
+    // TODO: replace by proper html url property from danger type
+    const prInfo: string = `<${(pr as any).html_url}|*PR#${pr.number}* - ${pr.title}>`
+    const prAuthor: string = `<${(pr.user as any).html_url}|${pr.user.login}>`
 
-    if (messages.length > 0) {
-      msg.attachments.push(formatSlackAttachment("Messages", "#999", messages))
+    msg.iconEmoji = getDynamicEmoji(fails, warnings)
+    msg.text = `${prInfo} by ${prAuthor}\n${pr.body}`
+
+    // add violations as slack attachments
+    if (!fails.length && !warnings.length && !messages.length) {
+      msg.text += "\nNo output to show."
+    } else {
+      if (fails.length > 0) {
+        msg.attachments.push(createAttachment("Fails", "danger", fails))
+      }
+
+      if (warnings.length > 0) {
+        msg.attachments.push(createAttachment("Warnings", "warning", warnings))
+      }
+
+      if (messages.length > 0) {
+        msg.attachments.push(createAttachment("Messages", "#999", messages))
+      }
+
+      if (markdowns.length > 0) {
+        msg.attachments.push(createMarkdownAttachment("Comments", "#EEE", markdowns))
+      }
     }
   }
 
   return msg
 }
 
-function getDynamicEmoji(errors: Violation[], warnings: Violation[]) {
-  const emojiError = ":rage:"
-  const emojiWarning = ":neutral_face:"
-  const emojiHealthy = ":blush:"
+export function getDynamicEmoji(errors: Violation[], warnings: Violation[]) {
+  const emojiError: string = ":rage:"
+  const emojiWarning: string = ":neutral_face:"
+  const emojiHealthy: string = ":blush:"
 
   if (errors.length > 0) {
     return emojiError
@@ -103,19 +121,25 @@ function getDynamicEmoji(errors: Violation[], warnings: Violation[]) {
   }
 }
 
-function formatSlackAttachment(
-  title: string,
-  color: string,
-  violations: Violation[],
-  isMarkdown?: boolean
-): SlackAttachment {
+export function createAttachment(title: string, color: string, violations: Violation[]): SlackAttachment {
   const titleWithCount: string = `${title} (${violations.length})`
-  const textContent = violations.map(violation => `• ${violation.message}\n`).join()
+  const textContent: string = violations.map(violation => `• ${violation.message}`).join("\n")
 
   return {
     color,
     fallback: titleWithCount,
     title: titleWithCount,
     text: textContent,
+    mrkdwn_in: ["text"],
+  }
+}
+
+export function createMarkdownAttachment(title: string, color: string, comments: string[]): SlackAttachment {
+  return {
+    color,
+    fallback: title,
+    title,
+    text: comments.join("\n"),
+    mrkdwn_in: ["text"],
   }
 }
