@@ -1,4 +1,12 @@
+import {
+  emptyResults,
+  failsResults,
+  failsResultsWithoutMessages,
+  summaryResults,
+  warnResults,
+} from "./ExampleDangerResults"
 import slack from "./index"
+import { SlackOptions } from "./SlackInterfaces"
 
 declare const global: any
 
@@ -19,10 +27,13 @@ describe("slack()", () => {
 
   it("Checks for a that message has been called", () => {
     global.danger = {
-      github: { pr: { title: "My Test Title" } },
+      github: { pr: { title: "My Test Title", number: 89 } },
     }
-
-    slack()
+    const options: SlackOptions = {
+      url: "https://hooks.slack.com/services/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",
+      username: "jacky",
+    }
+    slack(options)
 
     expect(global.message).toHaveBeenCalledWith("PR Title: My Test Title")
   })
