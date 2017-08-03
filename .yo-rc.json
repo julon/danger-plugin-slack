@@ -1,0 +1,11 @@
+{
+  "generator-danger-plugin": {
+    "promptValues": {
+      "authorName": "Julon Lou",
+      "authorEmail": "contact@julonlou.com",
+      "githubUsername": "julon",
+      "useYarn": true,
+      "useTypeScript": true
+    }
+  }
+}
