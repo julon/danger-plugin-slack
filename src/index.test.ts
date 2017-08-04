@@ -90,26 +90,22 @@ describe("createMessage()", () => {
 
 describe("getDynamicEmoji()", () => {
   it("should return an angry emoji if there is at least a fail", () => {
-    const { fails, warnings } = failsResults
-    const result = getDynamicEmoji(fails, warnings)
+    const result = getDynamicEmoji(failsResults.fails, failsResults.warnings)
     expect(result).toBe(":rage:")
   })
 
   it("should return an neutral face emoji if there is no fail and at least a warning", () => {
-    const { fails, warnings } = warnResults
-    const result = getDynamicEmoji(fails, warnings)
+    const result = getDynamicEmoji(warnResults.fails, warnResults.warnings)
     expect(result).toBe(":neutral_face:")
   })
 
   it("should return an happy face emoji if there is no fail and no warning", () => {
-    const { fails, warnings } = emptyResults
-    const result = getDynamicEmoji(fails, warnings)
+    const result = getDynamicEmoji(emptyResults.fails, emptyResults.warnings)
     expect(result).toBe(":blush:")
   })
 
   it("should return an angry emoji if there is at least a fail and some warning", () => {
-    const { fails, warnings } = summaryResults
-    const result = getDynamicEmoji(fails, warnings)
+    const result = getDynamicEmoji(summaryResults.fails, summaryResults.warnings)
     expect(result).toBe(":rage:")
   })
 })

@@ -49,7 +49,6 @@ export default function slack(options: SlackOptions) {
 }
 
 export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
-  const { fails, warnings, messages, markdowns } = resultLists
 
   const msg: SlackMessage = {
     text: "",
@@ -73,6 +72,11 @@ export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, optio
     msg.text = `${options.text}`
   } else {
     // send only the report
+
+    const fails = resultLists.fails
+    const warnings = resultLists.warnings
+    const messages = resultLists.messages
+    const markdowns = resultLists.markdowns
 
     // temporary wild cast to retrieve url
     // TODO: replace by proper html url property from danger type
