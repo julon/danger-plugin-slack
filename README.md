@@ -21,10 +21,10 @@ To send the Danger report to slack:
 import slack from 'danger-plugin-slack'
 
 const options = {
-  webhookUrl: "YOUR_SLACK_WEBHOOK_URL"
+  webhookUrl: "YOUR_SLACK_WEBHOOK_URL" // only the webhook URL is required
 }
 
-slack(options)
+slack(options) // to invoke at the end of the dangerfile to get the full report
 ```
 
 To send a specific message:
@@ -44,6 +44,10 @@ const options = {
 
 slack(options)
 ```
+
+## Incoming Webhook
+To get a new incoming webhook url, you will have to [click here](https://my.slack.com/services/new/incoming-webhook/).
+Keep in mind that optional parameters such as channel or emoji doesn't work with integrations declared as Slack Apps. So it's better to create a simple incoming webhook.
 
 ## Changelog
 
