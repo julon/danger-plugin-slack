@@ -30,29 +30,35 @@
     "predocs": "rm -rf docs/",
     "docs": "esdoc -c .esdoc.json",
     "prepublish": "npm run build",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release": "semantic-release",
     "prettier": "prettier",
     "prettier-write": "npm run prettier -- --parser typescript --no-semi --trailing-comma es5 --write --print-width 120",
     "prettier-project": "npm run prettier-write -- 'src/**/*.{ts,tsx}'",
-    "lint": "tslint \"src/**/*.ts\""
+    "lint": "tslint \"src/**/*.ts\"",
+    "travis-deploy-once": "travis-deploy-once"
   },
   "license": "MIT",
   "engines": {
     "node": ">=4.0.0"
   },
   "devDependencies": {
+    "@semantic-release/changelog": "^1.0.0",
+    "@semantic-release/git": "^2.0.2",
+    "@semantic-release/github": "^3.0.1",
+    "@semantic-release/npm": "^2.6.4",
     "@slack/client": "^3.10.0",
-    "@types/jest": "^20.0.6",
+    "@types/jest": "^21.1.0",
     "commitizen": "^2.9.6",
     "cz-conventional-changelog": "^2.0.0",
-    "danger": "*",
+    "danger": "^3.0.5",
     "husky": "^0.14.3",
-    "jest": "^20.0.1",
-    "lint-staged": "^4.0.2",
-    "prettier": "^1.3.1",
-    "semantic-release": "^6.3.6",
-    "ts-jest": "^20.0.0",
-    "tslint": "^5.4.3",
+    "jest": "^22.0.3",
+    "lint-staged": "^6.0.0",
+    "prettier": "^1.10.2",
+    "semantic-release": "^12.2.2",
+    "travis-deploy-once": "^4.3.1",
+    "ts-jest": "^22.0.0",
+    "tslint": "^5.9.1",
     "typescript": "^2.3.2",
     "validate-commit-msg": "^2.12.1"
   },
@@ -84,6 +90,22 @@
     "testPathIgnorePatterns": [
       "\\.snap$",
       "<rootDir>/node_modules/"
+    ]
+  },
+  "dependencies": {},
+  "release": {
+    "verifyConditions": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
+    ],
+    "getLastRelease": "@semantic-release/npm",
+    "publish": [
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/git",
+      "@semantic-release/github"
     ]
   }
 }
