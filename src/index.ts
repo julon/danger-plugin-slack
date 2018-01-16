@@ -49,7 +49,6 @@ export default function slack(options: SlackOptions) {
 }
 
 export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
-
   const msg: SlackMessage = {
     text: "",
     username: options.username || "DangerJS",
