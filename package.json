@@ -47,7 +47,7 @@
     "@semantic-release/github": "^4.0.0",
     "@semantic-release/npm": "^3.0.0",
     "@slack/client": "^3.10.0",
-    "@types/jest": "^22.1.0",
+    "@types/jest": "^23.3.7",
     "commitizen": "^2.9.6",
     "cz-conventional-changelog": "^2.0.0",
     "danger": "^3.0.5",
