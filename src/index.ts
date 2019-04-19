@@ -1,7 +1,9 @@
 import { IncomingWebhook } from "@slack/client"
-import { GitHubPRDSL, Violation } from "../node_modules/danger/distribution/danger"
+import { BitBucketServerPRDSL, GitHubPRDSL, Violation } from "../node_modules/danger/distribution/danger"
 import { DangerDSLType } from "../node_modules/danger/distribution/dsl/DangerDSL"
 import { DangerResults } from "../node_modules/danger/distribution/dsl/DangerResults"
+
+export type SlackPRDSLType = "github" | "bitbucket_server"
 
 export interface SlackOptions {
   webhookUrl: string
@@ -10,6 +12,7 @@ export interface SlackOptions {
   iconEmoji?: string
   iconUrl?: string
   channel?: string
+  prdsl?: SlackPRDSLType
 }
 
 export interface SlackAttachment {
@@ -29,6 +32,18 @@ export interface SlackMessage {
   attachments: SlackAttachment[]
 }
 
+export interface SlackJoinedPRDSLUser {
+  login: string
+  html_url: string
+}
+
+export interface SlackJoinedPRDSL {
+  number: string | number
+  body: string
+  title: string
+  user: SlackJoinedPRDSLUser
+}
+
 /**
  * Current instance of Danger data
  */
@@ -39,16 +54,43 @@ declare var danger: DangerDSLType
  */
 declare var results: DangerResults
 
+export function convertToSlackPRDSL(pr: any, type: SlackPRDSLType) {
+  if (type === "bitbucket_server") {
+    return {
+      html_url: (pr as any).links.self[0].href,
+      body: (pr as BitBucketServerPRDSL).description,
+      number: (pr as BitBucketServerPRDSL).id,
+      title: (pr as BitBucketServerPRDSL).title,
+      user: {
+        login: (pr as BitBucketServerPRDSL).author.user.name,
+        html_url: (pr as BitBucketServerPRDSL).author.user.emailAddress
+          ? "mailto: " + (pr as BitBucketServerPRDSL).author.user.emailAddress
+          : "",
+      },
+    } as SlackJoinedPRDSL
+  } else {
+    return (pr as any) as SlackJoinedPRDSL
+  }
+}
+
 /**
  * Report to Slack the result of Danger
  */
 export default function slack(options: SlackOptions) {
   const webhook = new IncomingWebhook(options.webhookUrl)
-  const msg: SlackMessage = createMessage(danger.github.pr, results, options)
+
+  if (!options.prdsl) {
+    options.prdsl = "github"
+  }
+  const msg: SlackMessage = createMessage(
+    convertToSlackPRDSL(danger[options.prdsl].pr, options.prdsl),
+    results,
+    options
+  )
   webhook.send(msg)
 }
 
-export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
+export function createMessage(pr: SlackJoinedPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
   const msg: SlackMessage = {
     text: "",
     username: options.username || "DangerJS",
@@ -102,7 +144,15 @@ export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, optio
       }
 
       if (markdowns.length > 0) {
-        msg.attachments.push(createMarkdownAttachment("Comments", "#EEE", markdowns))
+        msg.attachments.push(
+          createMarkdownAttachment(
+            "Comments",
+            "#EEE",
+            markdowns.map((result: Violation) => {
+              return result.message
+            })
+          )
+        )
       }
     }
   }

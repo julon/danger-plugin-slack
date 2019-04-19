@@ -1,7 +1,8 @@
-import { GitHubPRDSL, Violation } from "../node_modules/danger/distribution/danger"
-import { emptyResults, failsResults, failsResultsWithoutMessages, summaryResults, warnResults } from "./danger-mock"
-import slack from "./index"
+import { BitBucketServerPRDSL, Violation } from "../node_modules/danger/distribution/danger"
+import { emptyResults, failsResults, summaryResults, warnResults } from "./danger-mock"
+
 import {
+  convertToSlackPRDSL,
   createAttachment,
   createMarkdownAttachment,
   createMessage,
@@ -25,6 +26,53 @@ describe("slack()", () => {
     global.message = undefined
     global.fail = undefined
     global.markdown = undefined
+  })
+})
+
+describe("convertToSlackPRDSL()", () => {
+  let pr: any
+  let expected: any
+
+  beforeEach(() => {
+    pr = {
+      html_url: "custom_url",
+      number: 10,
+      title: "super PR",
+      body: "Some text in body",
+      user: {
+        login: "julon",
+        html_url: "mailto: julon@test.com",
+      },
+    }
+
+    expected = pr
+  })
+
+  it("for github", () => {
+    expect(convertToSlackPRDSL(pr, "github")).toEqual(expected)
+  })
+
+  it("for bitbucket", () => {
+    const bbPr = {
+      links: {
+        self: [
+          {
+            href: "custom_url",
+          },
+        ],
+      },
+      id: 10,
+      title: "super PR",
+      description: "Some text in body",
+      author: {
+        user: {
+          name: "julon",
+          emailAddress: "julon@test.com",
+        },
+      },
+    }
+
+    expect(convertToSlackPRDSL(bbPr, "bitbucket_server")).toEqual(expected)
   })
 })
 

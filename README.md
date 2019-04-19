@@ -41,6 +41,7 @@ const options = {
   iconEmoji: ":sunglasses:", // A custom emoji (optional, default: ":open_mouth:")
   iconUrl: "http://path/custom/icon/url", // A custom iconUrl (optional, default: null)
   channel: "#general", // A custom channel (optional)
+  prdsl: "bitbucket_server" // allowing to switch between github and bitbucket_server (optional, default: github)
 }
 
 slack(options)
