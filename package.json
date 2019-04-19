@@ -22,6 +22,7 @@
   "main": "dist/index.js",
   "types": "types/index.d.ts",
   "scripts": {
+    "prepack": "npm run build",
     "precommit": "lint-staged",
     "commit": "git-cz",
     "commitmsg": "validate-commit-msg",
@@ -86,6 +87,7 @@
     "transform": {
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
+    "testURL": "http://localhost",
     "testRegex": "(.test)\\.(ts|tsx)$",
     "testPathIgnorePatterns": [
       "\\.snap$",
