@@ -137,7 +137,7 @@ export function createAttachment(title: string, color: string, violations: Viola
   }
 }
 
-export function createMarkdownAttachment(title: string, color: string, comments: string[]): SlackAttachment {
+export function createMarkdownAttachment(title: string, color: string, comments: Violation[]): SlackAttachment {
   return {
     color,
     fallback: title,
