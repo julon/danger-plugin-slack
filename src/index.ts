@@ -29,6 +29,11 @@ export interface SlackMessage {
   attachments: SlackAttachment[]
 }
 
+export interface SlackPayload {
+  webhookUrl: string
+  payload: any
+}
+
 /**
  * Current instance of Danger data
  */
@@ -46,6 +51,11 @@ export default function slack(options: SlackOptions) {
   const webhook = new IncomingWebhook(options.webhookUrl)
   const msg: SlackMessage = createMessage(danger.github.pr, results, options)
   webhook.send(msg)
+}
+
+export function send_payload(options: SlackPayload) {
+  const webhook = new IncomingWebhook(options.webhookUrl)
+  webhook.send(options.payload)
 }
 
 export function createMessage(pr: GitHubPRDSL, resultLists: DangerResults, options: SlackOptions): SlackMessage {
@@ -137,7 +147,7 @@ export function createAttachment(title: string, color: string, violations: Viola
   }
 }
 
-export function createMarkdownAttachment(title: string, color: string, comments: string[]): SlackAttachment {
+export function createMarkdownAttachment(title: string, color: string, comments: Violation[]): SlackAttachment {
   return {
     color,
     fallback: title,

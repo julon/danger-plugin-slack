@@ -126,7 +126,7 @@ describe("createAttachment()", () => {
 
 describe("createMarkdownAttachment()", () => {
   it("should return an attachment with a title, a black color and one violation", () => {
-    const markdowns: string[] = ["This is markdown"]
+    const markdowns: Violation[] = [{ message: "This is markdown" }]
     const result: SlackAttachment = createMarkdownAttachment("title", "#000000", markdowns)
     expect(result).toEqual({
       color: "#000000",
