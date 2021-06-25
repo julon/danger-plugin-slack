@@ -46,6 +46,7 @@ const options = {
 slack(options)
 ```
 
+
 ## Incoming Webhook
 To get a new incoming webhook url, you will have to [click here](https://my.slack.com/services/new/incoming-webhook/).
 Keep in mind that optional parameters such as channel or emoji doesn't work with integrations declared as Slack Apps. So it's better to create a simple incoming webhook.
